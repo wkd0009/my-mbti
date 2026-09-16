@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MBTI로 포켓몬 찾기</title>
+<style>
+  :root{
+    --cream: #FFF6E0;
+    --cream-deep: #FCECC0;
+    --card: #FFFDF6;
+    --yellow: #FFC93C;
+    --yellow-deep: #FFB100;
+    --orange: #FF9130;
+    --brown: #5A4632;
+    --brown-soft: #8C7355;
+    --line: #F0DFA6;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background:
+      radial-gradient(circle at 15% 10%, var(--cream-deep) 0%, transparent 45%),
+      radial-gradient(circle at 85% 90%, var(--cream-deep) 0%, transparent 45%),
+      var(--cream);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    color: var(--brown);
+  }
+
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  header .badge {
+    display: inline-block;
+    background: var(--yellow);
+    color: var(--brown);
+    padding: 6px 18px;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-size: 2.1rem;
+    line-height: 1.35;
+    margin: 0 0 10px;
+    font-weight: 800;
+  }
+
+  header p {
+    font-size: 1.05rem;
+    color: var(--brown-soft);
+    margin: 0;
+  }
+
+  /* 선택 화면 */
+  #pick-screen .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  @media (max-width: 560px) {
+    #pick-screen .grid { grid-template-columns: repeat(2, 1fr); }
+    h1 { font-size: 1.6rem; }
+  }
+
+  .mbti-btn {
+    background: var(--card);
+    border: 3px solid var(--line);
+    border-radius: 20px;
+    padding: 22px 8px;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--brown);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    letter-spacing: 0.02em;
+  }
+
+  .mbti-btn:hover {
+    background: var(--yellow);
+    border-color: var(--yellow-deep);
+    transform: translateY(-4px);
+  }
+
+  .mbti-btn:active {
+    transform: translateY(-1px);
+  }
+
+  .mbti-btn:focus-visible {
+    outline: 4px solid var(--orange);
+    outline-offset: 2px;
+  }
+
+  /* 결과 화면 */
+  #result-screen {
+    display: none;
+  }
+
+  .result-card {
+    background: var(--card);
+    border: 3px solid var(--line);
+    border-radius: 28px;
+    padding: 40px 30px;
+    text-align: center;
+  }
+
+  .result-emoji {
+    font-size: 5.5rem;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .result-type {
+    display: inline-block;
+    background: var(--brown);
+    color: var(--cream);
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 5px 16px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+
+  .result-name {
+    font-size: 2.1rem;
+    font-weight: 800;
+    margin: 0 0 18px;
+  }
+
+  .result-reason {
+    font-size: 1.15rem;
+    line-height: 1.75;
+    color: var(--brown);
+    max-width: 480px;
+    margin: 0 auto 28px;
+    text-align: left;
+  }
+
+  .compat-box {
+    background: var(--cream-deep);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .compat-box .compat-emoji {
+    font-size: 2.6rem;
+  }
+
+  .compat-text {
+    text-align: left;
+    font-size: 1rem;
+  }
+
+  .compat-text .compat-label {
+    font-weight: 700;
+    color: var(--orange);
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.95rem;
+  }
+
+  .compat-text .compat-name {
+    font-weight: 800;
+    font-size: 1.15rem;
+  }
+
+  .retry-btn {
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 16px 38px;
+    font-size: 1.15rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+
+  .retry-btn:hover {
+    background: var(--yellow-deep);
+    transform: translateY(-2px);
+  }
+
+  .retry-btn:focus-visible {
+    outline: 4px solid var(--brown);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mbti-btn, .retry-btn { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <span class="badge">MBTI 포켓몬 매칭</span>
+    <h1>당신의 MBTI와 딱 맞는<br>포켓몬을 찾아보세요</h1>
+    <p>16가지 유형 중 하나를 골라보세요</p>
+  </header>
+
+  <section id="pick-screen">
+    <div class="grid" id="mbti-grid"></div>
+  </section>
+
+  <section id="result-screen">
+    <div class="result-card">
+      <div class="result-emoji" id="r-emoji">🐣</div>
+      <span class="result-type" id="r-type">INTJ</span>
+      <h2 class="result-name" id="r-name">이름</h2>
+      <p class="result-reason" id="r-reason">이유</p>
+
+      <div class="compat-box">
+        <div class="compat-emoji" id="c-emoji">🐣</div>
+        <div class="compat-text">
+          <span class="compat-label" id="c-label">궁합이 좋은 유형</span>
+          <span class="compat-name" id="c-name">이름</span>
+        </div>
+      </div>
+
+      <button class="retry-btn" id="retry-btn">다시 고르기</button>
+    </div>
+  </section>
+</div>
+
+<script>
+  const DATA = {
+    INTJ: { emoji: "🧠", name: "뮤츠", reason: "혼자만의 시간 속에서 완벽한 전략을 세우는 뮤츠는, 목표를 향해 흔들림 없이 나아가는 당신과 꼭 닮았어요. 겉으론 차가워 보여도 속엔 깊은 확신이 있죠.", compat: "ENFP" },
+    ENFP: { emoji: "🔥", name: "플레온", reason: "호기심 가득한 눈으로 세상을 탐험하는 플레온처럼, 당신도 새로운 아이디어와 사람들에게 뜨거운 열정을 쏟아요. 어디서든 분위기를 밝혀주는 존재예요.", compat: "INTJ" },
+    INTP: { emoji: "🔮", name: "후딘", reason: "궁금한 것은 끝까지 파고드는 후딘처럼, 당신도 논리와 원리를 이해할 때까지 생각을 멈추지 않아요. 조용하지만 머릿속은 늘 분주하죠.", compat: "ENTJ" },
+    ENTJ: { emoji: "🌋", name: "리자몽", reason: "무리를 이끌고 목표를 향해 거침없이 날아오르는 리자몽처럼, 당신은 계획을 세우고 사람들을 이끄는 데 타고났어요. 자신감 넘치는 리더예요.", compat: "INTP" },
+    ENTP: { emoji: "👻", name: "팬텀", reason: "장난기 가득한 팬텀처럼 당신도 예상 밖의 발상으로 주변을 놀라게 해요. 토론을 즐기고, 틀에 갇히는 걸 누구보다 싫어하죠.", compat: "INFJ" },
+    INFJ: { emoji: "✨", name: "뮤", reason: "신비롭고 조용하지만 깊은 통찰을 지닌 뮤처럼, 당신도 사람과 세상을 남들과 다른 시선으로 바라봐요. 이상을 향한 마음이 진심이에요.", compat: "ENTP" },
+    INFP: { emoji: "🦊", name: "이브이", reason: "어떤 모습으로든 진화할 수 있는 이브이처럼, 당신 안에는 무한한 가능성과 섬세한 감성이 자리하고 있어요. 자신만의 가치를 소중히 여기죠.", compat: "ENFJ" },
+    ENFJ: { emoji: "🐉", name: "망나뇽", reason: "강한 힘을 지녔지만 누구보다 다정하게 무리를 돌보는 망나뇽처럼, 당신도 사람들을 챙기고 이끄는 데 진심이에요. 따뜻한 카리스마의 소유자죠.", compat: "INFP" },
+    ISTJ: { emoji: "🥋", name: "루카리오", reason: "원칙을 지키고 꾸준히 스스로를 단련하는 루카리오처럼, 당신도 맡은 일에 성실하고 책임감이 강해요. 믿음직스럽다는 말을 자주 듣죠.", compat: "ESFP" },
+    ESFP: { emoji: "⚡", name: "피카츄", reason: "밝은 에너지로 주변 분위기를 순식간에 띄우는 피카츄처럼, 당신도 함께 있으면 즐거운 사람이에요. 지금 이 순간을 마음껏 즐기는 편이죠.", compat: "ISTJ" },
+    ISFJ: { emoji: "🌙", name: "나인테일", reason: "우아하면서도 조용히 곁을 지켜주는 나인테일처럼, 당신도 가까운 사람들을 세심하게 챙기는 다정함을 지녔어요. 은근히 든든한 존재예요.", compat: "ESTP" },
+    ESTP: { emoji: "💪", name: "괴력몬", reason: "생각보다 몸이 먼저 움직이는 괴력몬처럼, 당신도 순간의 판단력과 실행력이 뛰어나요. 망설이기보다 일단 부딪혀보는 스타일이죠.", compat: "ISFJ" },
+    ISTP: { emoji: "😴", name: "야돈", reason: "느긋해 보여도 결정적인 순간엔 자기만의 방식으로 문제를 해결하는 야돈처럼, 당신도 침착하게 상황을 관찰하고 손으로 직접 해결하는 걸 좋아해요.", compat: "ESFJ" },
+    ESFJ: { emoji: "🐕", name: "윈디", reason: "충직하고 다정하게 곁을 지키는 윈디처럼, 당신도 주변 사람들을 살뜰히 챙기며 함께하는 분위기를 소중히 여겨요. 정이 많은 편이죠.", compat: "ISTP" },
+    ISFP: { emoji: "🎀", name: "푸린", reason: "자기만의 노래로 감정을 표현하는 푸린처럼, 당신도 말보다 행동과 감성으로 진심을 전해요. 부드럽지만 자신만의 색깔이 뚜렷하죠.", compat: "ESTJ" },
+    ESTJ: { emoji: "🛡️", name: "거북왕", reason: "단단한 등껍질로 무리를 지키며 체계적으로 상황을 이끄는 거북왕처럼, 당신도 계획적이고 책임감 있게 일을 처리해요. 조직에서 믿고 맡기는 사람이죠.", compat: "ISFP" }
+  };
+
+  const ORDER = ["INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP",
+                 "ISTJ","ISFJ","ISTP","ISFP","ESTJ","ESFJ","ESTP","ESFP"];
+
+  const grid = document.getElementById("mbti-grid");
+  ORDER.forEach(type => {
+    const btn = document.createElement("button");
+    btn.className = "mbti-btn";
+    btn.textContent = type;
+    btn.addEventListener("click", () => showResult(type));
+    grid.appendChild(btn);
+  });
+
+  const pickScreen = document.getElementById("pick-screen");
+  const resultScreen = document.getElementById("result-screen");
+
+  function showResult(type) {
+    const info = DATA[type];
+    const compatInfo = DATA[info.compat];
+
+    document.getElementById("r-emoji").textContent = info.emoji;
+    document.getElementById("r-type").textContent = type;
+    document.getElementById("r-name").textContent = info.name;
+    document.getElementById("r-reason").textContent = info.reason;
+
+    document.getElementById("c-emoji").textContent = compatInfo.emoji;
+    document.getElementById("c-label").textContent = `궁합이 좋은 유형: ${info.compat}`;
+    document.getElementById("c-name").textContent = compatInfo.name;
+
+    pickScreen.style.display = "none";
+    resultScreen.style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.getElementById("retry-btn").addEventListener("click", () => {
+    resultScreen.style.display = "none";
+    pickScreen.style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+</script>
+
+</body>
+</html>
